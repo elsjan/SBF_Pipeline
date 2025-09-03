@@ -3,7 +3,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS   # In order to get the shift for overlaying frames
 
-from lacosmic import lacosmic # for cosmic ray detection
+import lacosmic # for cosmic ray detection
 
 import sep
 

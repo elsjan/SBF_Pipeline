@@ -6,7 +6,7 @@
 
 import sys
 # path where the individual components are stored.
-sys.path.append("C:/Users/Lei/Documents/Courses/MSc Astronomy/Thesis/MAIN/pipeline/functions")
+sys.path.append("/root/MasterThesis/SBF_Pipeline/functions")
 
 import os # to handle file structures
 from astropy.io import fits # opening and savind fits files
