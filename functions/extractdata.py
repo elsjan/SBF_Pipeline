@@ -326,7 +326,7 @@ def preProcessDataDrz(data_raw, estimate_background=False):
     """
 
     mask_raw = ~np.isnan(data_raw)
-
+    
     data, mask, cutout_mask = maximumSquareCutoutGalcenter(data_raw, mask_raw)
     
 #     if np.mean(data_raw.shape) < 1500: # for large files find_galaxy is inefficient

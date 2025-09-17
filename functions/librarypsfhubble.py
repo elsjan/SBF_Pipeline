@@ -144,11 +144,14 @@ def calculateLibrarySbfIR(data_path, peak_flux,
         library_psf = extractLibraryPsf(data_path + "/psf_files", peak_flux=peak_flux,
                                        plot=make_plots, image_path=image_path)
         _, expected_ps, sbf, noise = calculateSBF(nri, mask_combined, library_psf,
-                                                  norm_type = "MaskedPixels",
-                                                  kfit_i=50, kfit_f=-1, plot=make_plots)
+                                                norm_type = "MaskedPixels",
+                                                fit_range_i=0.15, fit_range_f=0.7,
+                                                plot=make_plots, image_path=image_path, 
+                                                image_title="10.2_sbf_fit_library_psf.png")
+                                                  #kfit_i=50, kfit_f=-1, plot=make_plots)
         return library_psf, expected_ps, sbf, noise
-    elif ("psf_files" in listdir(data_path + "\..")):
-        library_psf = extractLibraryPsf(data_path + "\.." + "/psf_files",
+    elif ("psf_files" in listdir(data_path + "\\..")):  #!this way of creating a path does now work
+        library_psf = extractLibraryPsf(data_path + "\\.." + "/psf_files",
                                         peak_flux=peak_flux,
                                         plot=make_plots, image_path=image_path)
         _, expected_ps, sbf, noise = calculateSBF(nri, mask_combined, library_psf,

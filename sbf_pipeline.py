@@ -77,7 +77,7 @@ def openCreateFileStructure(folder_name,
     """
     folder_path = file_path + "/" + folder_name
     extract_files, compute_files, save_files = bool_files
-    
+
     if extract_files:
         # Check if the folder exists:
         if os.path.isdir(folder_path):

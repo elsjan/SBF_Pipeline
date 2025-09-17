@@ -95,7 +95,7 @@ def obtainSextractorSources(image, mask_0, thr,
         sep_background = sep.Background(image, mask=mask_0, 
                                         bw=box_width, bh=box_width)
     except: # sometimes byte conversion is necessary
-        sep_background = sep.Background(image.byteswap().newbyteorder(), 
+        sep_background = sep.Background(image.astype(image.dtype.newbyteorder('=')), 
                                         mask=mask_0, bw=box_width, bh=box_width)
     
     img_subtracted = np.copy(image)
@@ -434,7 +434,7 @@ def plotMaskedNri(img_model, res_image, total_mask, image_path, image_title,
         f = find_galaxy(img_model, plot=False, quiet=True)
         nri = dataCutout(nri, f.xpeak, f.ypeak, cutout_size)
 
-    frame.imshow(nri, cmap="gray", vmin=mean-7*std, vmax=mean+7*std, origin=1)
+    frame.imshow(nri, cmap="gray", vmin=mean-7*std, vmax=mean+7*std) #, origin=1)
     
     if image_path != None:
         plt.savefig(image_path + "/" + image_title)

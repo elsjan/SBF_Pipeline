@@ -127,12 +127,13 @@ def iterateBackgroundNoise(data, max_iter=10, fit_number=20, plot=False,
     Returned is the array of background levels found after each iteration. 
     If the updated background is 0 (no isolist could be fit), the algorithm stops.
     """
+
     bckgr_level = [0]
-    
     if plot==True:
         n_array = np.ceil(np.sqrt(max_iter))
         fig = figure(figsize=[19,15])
-        subplots = [fig.add_subplot(n_array, n_array, idx+1) for idx in range(max_iter)]
+        print(n_array, np.shape(n_array))
+        subplots = [fig.add_subplot(int(n_array), int(n_array), idx+1) for idx in range(max_iter)]
     else:
         subplots = np.zeros(max_iter) # need for a placeholder
         
