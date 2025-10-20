@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 from astropy.io import fits
 from astropy.wcs import WCS   # In order to get the shift for overlaying frames
@@ -16,15 +17,15 @@ from sourcemasking import obtainSextractorSources
 
 # -------------------------------------------------------------------------------
 
-def openFits(file_path):
+def openFits(file_path, k=0):   #Euclid data type version right now!!!
     """
     Open a fits file (works well with HST data), extract the data,
     exposure time, and wcs object (required for position information)
     """
     with fits.open(file_path) as hdu:
-        data = hdu[1].data
+        data = hdu[k].data
         exptime = hdu[0].header["EXPTIME"]
-        wcs = WCS(hdu[1].header)
+        wcs = WCS(hdu[k].header)
     return data, exptime, wcs
 
 
@@ -40,6 +41,8 @@ def meanIntensity(data, mask):
     Function is used for calculating the background level of a number of pixels 
     in the corner of a frame
     """ 
+    print("small check", np.shape(data), np.shape(mask))
+    print(data, mask)
     mean = np.median(data[~mask])
     weight = np.size(data[~mask])
     
@@ -49,7 +52,7 @@ def meanIntensity(data, mask):
     return mean, weight
 
 
-def findBackground(data, mask, wSqr=5):
+def findBackground(data, mask, wSqr=5, corners=None):
     """
     Function that estimates the background level by taking four squares 
     in the corner of a frame, where each square has width wSqr, estimating 
@@ -61,10 +64,24 @@ def findBackground(data, mask, wSqr=5):
     """
     # for each of the four corners, a mean (mX) and a weight (wX) is calculated 
     # (depending on the number of non-masked pixels in that corner)
+    # if corners == None:
+    plt.figure()
+    plt.imshow(data, norm='log')
+    plt.show()
     m1, w1 = meanIntensity(data[:wSqr , :wSqr ], mask[:wSqr , :wSqr ])
     m2, w2 = meanIntensity(data[:wSqr , -wSqr:], mask[:wSqr , -wSqr:])
     m3, w3 = meanIntensity(data[-wSqr:, :wSqr ], mask[-wSqr:, :wSqr ])
     m4, w4 = meanIntensity(data[-wSqr:, -wSqr:], mask[-wSqr:, -wSqr:])
+
+    # else:
+    #     m1, w1 = meanIntensity(data[corners[0,0]:corners[0,0]+wSqr,corners[0,1]:corners[0,1]+wSqr]
+    #                            , mask[corners[0,0]:corners[0,0]+wSqr, corners[0,1]:corners[0,1]+wSqr])
+    #     m2, w2 = meanIntensity(data[corners[1,0]:corners[1,0]+wSqr,corners[1,1]:corners[1,1]+wSqr]
+    #                            , mask[corners[1,0]:corners[1,0]+wSqr, corners[1,1]:corners[1,1]+wSqr])
+    #     m3, w3 = meanIntensity(data[corners[2,0]:corners[2,0]+wSqr,corners[2,1]:corners[2,1]+wSqr]
+    #                            , mask[corners[2,0]:corners[2,0]+wSqr, corners[2,1]:corners[2,1]+wSqr])
+    #     m4, w4 = meanIntensity(data[corners[3,0]:corners[3,0]+wSqr,corners[3,1]:corners[3,1]+wSqr]
+    #                            , mask[corners[3,0]:corners[3,0]+wSqr, corners[3,1]:corners[3,1]+wSqr])
     
     if w1 + w2 + w3 + w4 == 0:
         return 0 # no background level could accurately be found here.
@@ -146,11 +163,11 @@ def maskBadPixels(data_frame, effective_gain=2.3, readnoise=20):
     
     star_mask = maskBrightCentralStars(data_frame)
                         
-            # Parameters for lacosmic are typical for HST observations
-    clean_frame, mask_neg = lacosmic(-data_frame, mask=star_mask, 
-                                      contrast=4, cr_threshold=4.5, 
-                                      neighbor_threshold = 0.3, 
-                                      effective_gain=effective_gain, 
+    # Parameters for lacosmic are typical for HST observations
+    clean_frame, mask_neg = lacosmic(-data_frame, mask=star_mask,
+                                      contrast=4, cr_threshold=4.5,
+                                      neighbor_threshold=0.3,
+                                      effective_gain=effective_gain,
                                       readnoise=readnoise)
     
     

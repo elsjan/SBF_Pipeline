@@ -29,7 +29,7 @@ def obtainEllipseInstance(data, sma_normfactor=1):
     x_size, y_size = data.shape
     
     # use the find_galaxy procedure from mge to find the galaxy orientation
-    f = find_galaxy(np.ma.masked_array(data, np.isnan(data)), plot=False, quiet=True)
+    f = find_galaxy(data, plot=False, quiet=True)  #changed
     
     geometry = EllipseGeometry(x0=f.ypeak, y0=f.xpeak, 
                                sma=f.majoraxis/sma_normfactor, eps=f.eps, 
@@ -148,7 +148,7 @@ def fitInitialEllipseModel(data, mask_cr=None):
     
     masked_data = np.ma.masked_array(data, mask_cr)
         
-    model_basic = fitEllipseModel(masked_data, model_type="star_masking", nclip_sm=2)
+    model_basic = fitEllipseModel(masked_data, model_type="star_masking", nclip_sm=2) #changed
     
     residual_basic = data - model_basic
     return residual_basic, model_basic

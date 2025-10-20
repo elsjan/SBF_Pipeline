@@ -9,8 +9,8 @@ import os
 from tqdm.notebook import tqdm
 
 import sys
-sys.path.append("C:/Users/Lei/Documents/Courses/MSc Astronomy/Thesis/MAIN/pipeline")
-sys.path.append("C:/Users/Lei/Documents/Courses/MSc Astronomy/Thesis/MAIN/pipeline/functions")
+# sys.path.append("C:/Users/Lei/Documents/Courses/MSc Astronomy/Thesis/MAIN/pipeline")
+# sys.path.append("C:/Users/Lei/Documents/Courses/MSc Astronomy/Thesis/MAIN/pipeline/functions")
 
 
 from fourierfunctions import imageToPowerSpectrum, sizePsf
@@ -42,21 +42,22 @@ def maskCircle(data, x0, y0, rout, rin=0):
                 
     return mask
 
-### Note: Same as in sbf_pipeline
-def createDirectory(path, print_information=True):
-    """
-    Checks whether the specified path exists, if it doesn't then
-    the directory is created.
-    """
-    if os.path.isdir(path) != True:
-        os.mkdir(path)
-        if print_information:
-            print("Folder '"+ path + "' created in directory:")
-            print(os.getcwd())
-    return
+# ### Note: Same as in sbf_pipeline
+# def createDirectory(path, print_information=True):
+#     """
+#     Checks whether the specified path exists, if it doesn't then
+#     the directory is created.
+#     """
+#     if os.path.isdir(path) != True:
+#         os.mkdir(path)
+#         if print_information:
+#             print("Folder '"+ path + "' created in directory:")
+#             print(os.getcwd())
+#     return
 
 
 def getMedianBackground(image, npix):
+    # ! make the same mistake of taking corners point without checking theres actual data there
     """
     estimate the mean value in an image by extracting boxes of width npix from
     the corners of the image, estimating the mean, and returning the median.

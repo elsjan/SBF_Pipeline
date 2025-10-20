@@ -58,7 +58,7 @@ def findOutlierIdx(psf, threshold, mask):
     idx_outlier_pos = psf_temp > mean + threshold * std 
     idx_outlier_neg = psf_temp < mean - threshold * std
     
-    return idx_outlier_pos | idx_outlier_pos
+    return idx_outlier_pos | idx_outlier_neg 
 
 
 def selectPsf(psf, peak_flux=0.2, npix_std=18, std_max=0.002, 
