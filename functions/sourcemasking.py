@@ -273,6 +273,9 @@ def obtainSepParameters(obs_filter, data_type):
     elif (obs_filter == "F850LP") & (data_type =="dr"):
         return [[0.2, True,  256, True, 100, None, True ],
                 [0.2, False, 64,  True, 5,   None, True ]]
+    elif (obs_filter == "VIS") & (data_type =="flt"):
+        return [[3, True,  64, True, 7, None, False ],
+                [3, False, 64,  True, 7, None, False ]]
     else:
         print("No obs_filter, data_type pair matched. Default SEP parameters used.")
         return [[0.2, True,  256, True, 100, None, True ],

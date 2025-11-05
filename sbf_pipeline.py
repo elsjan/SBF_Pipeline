@@ -19,7 +19,6 @@ from extractdata import extractData
 from backgroundmodel import backgroundLevelAnalysis
 from ellipsemodels import fitInitialEllipseModel, fitFinalEllipseModel
 from sourcemasking import findInitialSourceMask, findFinalSourceMask
-from empiricalpsf import extractPsfSources
 from fourierfunctions import calculateSBF
 from librarypsfhubble import calculateLibrarySBF
 from sbfuncertainties import sbfMagnitudeAnnuliSigmas
