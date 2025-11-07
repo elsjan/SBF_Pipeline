@@ -25,15 +25,14 @@ def obtainEllipseInstance(data, sma_normfactor=1):
     
     sma_normfactor could be required in case of non-IR data, 
     isolist will not always fit otherwise.
-    """
-    x_size, y_size = data.shape
-    
+    """    
     # use the find_galaxy procedure from mge to find the galaxy orientation
-    f = find_galaxy(data, plot=False, quiet=True)  #changed
+    data = np.where(np.isnan(data), np.nanmedian(data), data)
+    f = find_galaxy(data, quiet=True)  #chaned, was np.ma.masked_array(data, np.isnan(data)),
     
     geometry = EllipseGeometry(x0=f.ypeak, y0=f.xpeak, 
                                sma=f.majoraxis/sma_normfactor, eps=f.eps, 
-                               pa=f.pa*np.pi/180, astep=0.1)
+                               pa=(90+f.pa)*np.pi/180, astep=0.1)  # possibly solves this, original had no 90
     
     ellipse = Ellipse(data, geometry)
     
@@ -64,6 +63,10 @@ def obtainIsolistInstance(ellipse, isolist_type=None, nclip_sm=0, **kwargs):
             isolist = ellipse.fit_image(nclip=2, minsma=10, step=0.3, fflag=0.6)
         if len(isolist)==0:
             isolist = ellipse.fit_image(nclip=3, minsma=10, step=0.3, fflag=0.6)
+        if len(isolist)==0:
+            print("Background fit failing, trying with fixed parameters instead")
+            isolist = ellipse.fit_image(nclip=3, minsma=10, step=0.3, fflag=0.6, 
+                                        fix_center=True, fix_pa=True, fix_eps=True)
         
     if isolist_type == "star_masking":
         while nclip_sm <= 3:

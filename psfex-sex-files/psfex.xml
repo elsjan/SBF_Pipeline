@@ -18,26 +18,18 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2025-10-21"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="11:49:38"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="0" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2025-11-07"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="13:55:12"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="2" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="root"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
-  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/root/MasterThesis/SBF_Pipeline"/>
-
-  <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-  <!-- !!!!!!!!!!!!!!!!!!!!!! an Error occured !!!!!!!!!!!!!!!!!!!!! -->
-  <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-  <PARAM name="Error_Msg" datatype="char" arraysize="*" ucd="meta" value="*Error*: VIGNET should be a 2D vector"/>
-  <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-  <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-
+  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/root/MasterThesis/SBF_Pipeline/psfex-sex-files"/>
   <TABLE ID="PSF_Fields" name="PSF_Fields">
    <DESCRIPTION>PSF metadata and stats per field gathered by PSFEx</DESCRIPTION>
    <!-- NFields may be 0 if an error occurred early in the processing -->
    <PARAM name="NFields" datatype="int" ucd="meta.number;meta.dataset" value="1"/>
    <!-- CurrField may differ from NFields if an error occurred -->
-   <PARAM name="CurrField" datatype="int" ucd="meta.number;meta.dataset" value="0"/>
+   <PARAM name="CurrField" datatype="int" ucd="meta.number;meta.dataset" value="1"/>
    <PARAM name="NSnapshots" datatype="int" arraysize="2" ucd="meta.number;meta.dataset" value="9 9"/>
    <FIELD name="Catalog_Name" datatype="char" arraysize="*" ucd="meta.id;meta.table;meta.file"/>
    <FIELD name="Image_Ident" datatype="char" arraysize="*" ucd="meta.id;obs.field"/>
@@ -110,17 +102,38 @@
    <FIELD name="PixelScale_WCS_Min" unit="arcsec" datatype="float" ucd="instr.scale;stat.min;instr.pixel"/>
    <FIELD name="PixelScale_WCS_Mean" unit="arcsec" datatype="float" ucd="instr.scale;stat.mean;instr.pixel"/>
    <FIELD name="PixelScale_WCS_Max" unit="arcsec" datatype="float" ucd="instr.scale;stat.max;instr.pixel"/>
-   <FIELD name="Plot_Counts" datatype="char" arraysize="*" ucd="meta.id;meta.file"/>
-   <FIELD name="Plot_Count_Fraction" datatype="char" arraysize="*" ucd="meta.id;meta.file"/>
-   <FIELD name="Plot_FWHM" datatype="char" arraysize="*" ucd="meta.id;meta.file"/>
-   <FIELD name="Plot_Ellipticity" datatype="char" arraysize="*" ucd="meta.id;meta.file"/>
    <DATA><TABLEDATA>
+    <TR>
+     <TD>starsA.cat</TD><TD>no ident</TD><TD>1</TD>
+     <TD>16</TD><TD>16</TD><TD>16</TD><TD>16</TD>
+     <TD>16</TD><TD>16</TD><TD>16</TD><TD>16</TD>
+     <TD>3.34065</TD><TD>3.34065</TD><TD>3.34065</TD>
+     <TD>0.710777</TD><TD>0.710777</TD><TD>0.710777</TD>
+     <TD>0.932612</TD><TD>0.932612</TD><TD>0.932612</TD>
+     <TD>2.20513</TD><TD>2.32188</TD><TD>2.5789</TD>
+     <TD>0.22032</TD><TD>0.236923</TD><TD>0.255935</TD>
+     <TD>0.0412891</TD><TD>0.130722</TD><TD>0.140244</TD>
+     <TD>-0.0334135</TD><TD>0.110079</TD><TD>0.119698</TD>
+     <TD>-0.132822</TD><TD>-0.070504</TD><TD>-0.0298152</TD>
+     <TD>1.88865</TD><TD>1.93065</TD><TD>2.1719</TD>
+     <TD>0.0438464</TD><TD>0.0715878</TD><TD>0.115912</TD>
+     <TD>2.01754</TD><TD>2.13667</TD><TD>2.42211</TD>
+     <TD>0.201542</TD><TD>0.219813</TD><TD>0.240125</TD>
+     <TD>0.0453287</TD><TD>0.143161</TD><TD>0.152542</TD>
+     <TD>-0.0362857</TD><TD>0.12099</TD><TD>0.130277</TD>
+     <TD>-0.141057</TD><TD>-0.0765267</TD><TD>-0.0322732</TD>
+     <TD>1.72616</TD><TD>1.76139</TD><TD>1.98507</TD>
+     <TD>0.0422392</TD><TD>0.0694003</TD><TD>0.114908</TD>
+     <TD>0.0591907</TD><TD>0.113194</TD><TD>0.18993</TD>
+     <TD>24.6531</TD><TD>28.2735</TD><TD>35.5346</TD>
+     <TD>0.099998</TD><TD>0.0999982</TD><TD>0.0999985</TD>
+    </TR>
    </TABLEDATA></DATA>
   </TABLE>
   <TABLE ID="PSF_Extensions" name="PSF_Extensions">
    <DESCRIPTION>PSF metadata and stats per extension gathered by PSFEx</DESCRIPTION>
    <!-- NExtensions may be 0 if an error occurred early in the processing -->
-   <PARAM name="NExtensions" datatype="int" ucd="meta.number;meta.dataset" value="0"/>
+   <PARAM name="NExtensions" datatype="int" ucd="meta.number;meta.dataset" value="1"/>
    <FIELD name="Extension" datatype="int" ucd="meta.record"/>
    <FIELD name="NStars_Loaded_Total" datatype="int" ucd="meta.number;meta.dataset"/>
    <FIELD name="NStars_Loaded_Min" datatype="int" ucd="meta.number;stat.min;meta.dataset"/>
@@ -191,6 +204,31 @@
    <FIELD name="PixelScale_WCS_Mean" unit="arcsec" datatype="float" ucd="instr.scale;stat.mean;instr.pixel"/>
    <FIELD name="PixelScale_WCS_Max" unit="arcsec" datatype="float" ucd="instr.scale;stat.max;instr.pixel"/>
    <DATA><TABLEDATA>
+    <TR>
+     <TD>1</TD>
+     <TD>16</TD><TD>16</TD><TD>16</TD><TD>16</TD>
+     <TD>16</TD><TD>16</TD><TD>16</TD><TD>16</TD>
+     <TD>3.34065</TD><TD>3.34065</TD><TD>3.34065</TD>
+     <TD>0.710777</TD><TD>0.710777</TD><TD>0.710777</TD>
+     <TD>0.932612</TD><TD>0.932612</TD><TD>0.932612</TD>
+     <TD>2.20513</TD><TD>2.32188</TD><TD>2.5789</TD>
+     <TD>0.22032</TD><TD>0.236923</TD><TD>0.255935</TD>
+     <TD>0.0412891</TD><TD>0.130722</TD><TD>0.140244</TD>
+     <TD>-0.0334135</TD><TD>0.110079</TD><TD>0.119698</TD>
+     <TD>-0.132822</TD><TD>-0.070504</TD><TD>-0.0298152</TD>
+     <TD>1.88865</TD><TD>1.93065</TD><TD>2.1719</TD>
+     <TD>0.0438464</TD><TD>0.0715878</TD><TD>0.115912</TD>
+     <TD>2.01754</TD><TD>2.13667</TD><TD>2.42211</TD>
+     <TD>0.201542</TD><TD>0.219813</TD><TD>0.240125</TD>
+     <TD>0.0453287</TD><TD>0.143161</TD><TD>0.152542</TD>
+     <TD>-0.0362857</TD><TD>0.12099</TD><TD>0.130277</TD>
+     <TD>-0.141057</TD><TD>-0.0765267</TD><TD>-0.0322732</TD>
+     <TD>1.72616</TD><TD>1.76139</TD><TD>1.98507</TD>
+     <TD>0.0422392</TD><TD>0.0694003</TD><TD>0.114908</TD>
+     <TD>0.0591907</TD><TD>0.113194</TD><TD>0.18993</TD>
+     <TD>24.6531</TD><TD>28.2735</TD><TD>35.5346</TD>
+     <TD>0.099998</TD><TD>0.0999982</TD><TD>0.0999985</TD>
+    </TR>
    </TABLEDATA></DATA>
   </TABLE>
   <TABLE ID="Warnings" name="Warnings">
@@ -199,12 +237,61 @@
    <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
    <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
    <DATA><TABLEDATA>
+    <TR><TD>2025-11-07</TD><TD>13:55:10</TD><TD>NTHREADS != 1 ignored: this build of PSFEx is single-threaded</TD></TR>
    </TABLEDATA></DATA>
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>PSFEx configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="psfex stars.cat -c default.psfex"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="psfex starsA.cat -c default.psfex"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.psfex"/>
+   <PARAM name="Basis_Type" datatype="char" arraysize="*" ucd="meta.code" value="PIXEL_AUTO"/>
+   <PARAM name="Basis_Number" datatype="int" ucd="meta.number" value="20"/>
+   <PARAM name="Basis_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file" value="basis.fits"/>
+   <PARAM name="Basis_Scale" datatype="double" ucd="arith.factor" value="1"/>
+   <PARAM name="NewBasis_Type" datatype="char" arraysize="*" ucd="meta.code" value="NONE"/>
+   <PARAM name="NewBasis_Number" datatype="int" ucd="meta.number" value="8"/>
+   <PARAM name="PSF_Sampling" unit="pix" datatype="double" ucd="arith.factor;instr.pixel;inst.det.psf" value="0"/>
+   <PARAM name="PSF_Accuracy" datatype="double" ucd="obs.param;phot.flux.sb;arith.ratio;instr.det.psf" value="0.01"/>
+   <PARAM name="PSF_Size" unit="pix" datatype="int" arraysize="2" ucd="meta.number;instr.pixel;instr.det.psf" value="25 25"/>
+   <PARAM name="Center_Keys" datatype="char" arraysize="*" ucd="meta.id;src;instr.det.psf" value="X_IMAGE,Y_IMAGE"/>
+   <PARAM name="PSF_Recenter" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="PhotFlux_Key" datatype="char" arraysize="*" ucd="meta.id;src;instr.det.psf" value="FLUX_APER(1)"/>
+   <PARAM name="PhotFluxErr_Key" datatype="char" arraysize="*" ucd="meta.id;src;instr.det.psf" value="FLUXERR_APER(1)"/>
+   <PARAM name="MEF_Type" datatype="char" arraysize="*" ucd="meta.code" value="INDEPENDENT"/>
+   <PARAM name="PSFVar_Keys" datatype="char" arraysize="*" ucd="meta.id;src;instr.det.psf" value="X_IMAGE,Y_IMAGE"/>
+   <PARAM name="PSFVar_Groups" datatype="int" arraysize="2" ucd="meta.id;stat.fit.param;instr.det.psf" value="1 1"/>
+   <PARAM name="PSFVar_Degrees" datatype="int" arraysize="1" ucd="stat.fit.param;instr.det.psf" value="2"/>
+   <PARAM name="PSFVar_NSnap" datatype="int" ucd="stat.fit.param;instr.det.psf" value="9"/>
+   <PARAM name="HiddenMEF_Type" datatype="char" arraysize="*" ucd="meta.code" value="COMMON"/>
+   <PARAM name="Stability_Type" datatype="char" arraysize="*" ucd="meta.code" value="EXPOSURE"/>
+   <PARAM name="Sample_AutoSelect" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="SampleVar_Type" datatype="char" arraysize="*" ucd="meta.code" value="SEEING"/>
+   <PARAM name="Sample_FWHMRange" unit="pix" datatype="double" arraysize="2" ucd="phys.size.diameter;instr.det.psf" value="2 10"/>
+   <PARAM name="Sample_Variability" datatype="double" ucd="instr.det.psf;arith.ratio" value="0.2"/>
+   <PARAM name="Sample_MinSN" datatype="double" ucd="stat.snr;stat.min" value="20"/>
+   <PARAM name="Sample_MaxEllip" datatype="double" ucd="src.ellipticity;stat.max" value="0.3"/>
+   <PARAM name="Sample_FlagMask" datatype="int" ucd="meta.code" value="254"/>
+   <PARAM name="BadPixel_Filter" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="BadPixel_NMax" datatype="int" ucd="meta.number;instr.pixel;stat.max" value="0"/>
+   <PARAM name="HomoBasis_Type" datatype="char" arraysize="*" ucd="meta.code" value="NONE"/>
+   <PARAM name="HomoBasis_Number" datatype="int" ucd="meta.number" value="10"/>
+   <PARAM name="HomoBasis_Scale" datatype="double" ucd="arith.factor" value="1"/>
+   <PARAM name="HomoPSF_Params" datatype="double" arraysize="2" ucd="stat.param" value="2 3"/>
+   <PARAM name="HomoKernel_Dir" datatype="char" arraysize="*" ucd="meta.id;meta.file" value=" "/>
+   <PARAM name="HomoKernel_Suffix" datatype="char" arraysize="*" ucd="meta.id;meta.file" value=".homo.fits"/>
+   <PARAM name="CheckPlot_Dev" datatype="char" arraysize="*" ucd="meta.code" value="PNG"/>
+   <PARAM name="CheckPlot_Res" datatype="int" arraysize="1" ucd="meta.number;meta" value="0"/>
+   <PARAM name="CheckPlot_AntiAlias" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="CheckPlot_Type" datatype="char" arraysize="*" ucd="meta.code" value="NONE"/>
+   <PARAM name="CheckPlot_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file" value="selfwhm,fwhm,ellipticity,counts,countfrac,chi2,resi"/>
+   <PARAM name="CheckImage_Type" datatype="char" arraysize="*" ucd="meta.code" value="NONE"/>
+   <PARAM name="CheckImage_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.fits" value="chi.fits,proto.fits,samp.fits,resi.fits,snap.fits"/>
+   <PARAM name="CheckImage_Cube" datatype="boolean" ucd="meta.code" value="F"/>
+   <PARAM name="PSF_Dir" datatype="char" arraysize="*" ucd="meta.id;meta.file" value=" "/>
+   <PARAM name="PSF_Suffix" datatype="char" arraysize="*" ucd="meta.id;meta.file" value=".psf"/>
+   <PARAM name="Verbose_Type" datatype="char" arraysize="*" ucd="meta.code" value="NORMAL"/>
+   <PARAM name="Write_XML" datatype="boolean" ucd="meta.code" value="T"/>
+   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
   </RESOURCE>
  </RESOURCE>
 </RESOURCE>
