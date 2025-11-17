@@ -18,9 +18,9 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2025-11-07"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="14:09:34"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="3" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2025-11-14"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="19:32:08"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="5" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="root"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/root/MasterThesis/SBF_Pipeline/psfex-sex-files-Hband"/>
@@ -104,29 +104,29 @@
    <FIELD name="PixelScale_WCS_Max" unit="arcsec" datatype="float" ucd="instr.scale;stat.max;instr.pixel"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>starsFCC184.cat</TD><TD>no ident</TD><TD>1</TD>
-     <TD>26</TD><TD>26</TD><TD>26</TD><TD>26</TD>
-     <TD>25</TD><TD>25</TD><TD>25</TD><TD>25</TD>
-     <TD>2.53644</TD><TD>2.53644</TD><TD>2.53644</TD>
-     <TD>0.539669</TD><TD>0.539669</TD><TD>0.539669</TD>
-     <TD>0.501271</TD><TD>0.501271</TD><TD>0.501271</TD>
-     <TD>1.80957</TD><TD>2.00349</TD><TD>2.03353</TD>
-     <TD>0.54078</TD><TD>0.58042</TD><TD>0.60901</TD>
-     <TD>0.00669134</TD><TD>0.0242002</TD><TD>0.184539</TD>
-     <TD>-0.0565659</TD><TD>0.00588316</TD><TD>0.17008</TD>
-     <TD>-0.0716053</TD><TD>-0.0234742</TD><TD>0.0328852</TD>
-     <TD>2.04419</TD><TD>4.65899</TD><TD>7.84004</TD>
-     <TD>0.0407006</TD><TD>0.0459106</TD><TD>0.0925915</TD>
-     <TD>1.58037</TD><TD>1.83813</TD><TD>1.8654</TD>
-     <TD>0.47157</TD><TD>0.52433</TD><TD>0.558224</TD>
-     <TD>0.00682293</TD><TD>0.0270675</TD><TD>0.213193</TD>
-     <TD>-0.0631402</TD><TD>0.00714812</TD><TD>0.197647</TD>
-     <TD>-0.0799187</TD><TD>-0.0261066</TD><TD>0.0365458</TD>
-     <TD>1.75775</TD><TD>3.82829</TD><TD>6.07154</TD>
-     <TD>0.0406345</TD><TD>0.0457592</TD><TD>0.0893052</TD>
-     <TD>0.0514668</TD><TD>0.0697069</TD><TD>0.18173</TD>
-     <TD>10.9743</TD><TD>12.9518</TD><TD>17.1734</TD>
-     <TD>0.299992</TD><TD>0.299994</TD><TD>0.299996</TD>
+     <TD>starsFCC147.cat</TD><TD>no ident</TD><TD>1</TD>
+     <TD>87</TD><TD>87</TD><TD>87</TD><TD>87</TD>
+     <TD>76</TD><TD>76</TD><TD>76</TD><TD>76</TD>
+     <TD>2.19326</TD><TD>2.19326</TD><TD>2.19326</TD>
+     <TD>0.466651</TD><TD>0.466651</TD><TD>0.466651</TD>
+     <TD>1.37171</TD><TD>1.37171</TD><TD>1.37171</TD>
+     <TD>1.54298</TD><TD>1.6066</TD><TD>1.7613</TD>
+     <TD>0.462649</TD><TD>0.5024</TD><TD>0.528364</TD>
+     <TD>0.00331174</TD><TD>0.0125584</TD><TD>0.0582726</TD>
+     <TD>-0.0505005</TD><TD>0.000883719</TD><TD>0.046543</TD>
+     <TD>-0.0297672</TD><TD>0.0125273</TD><TD>0.0349129</TD>
+     <TD>2.5557</TD><TD>2.89468</TD><TD>3.97842</TD>
+     <TD>0.0341176</TD><TD>0.0670615</TD><TD>0.0880449</TD>
+     <TD>1.27896</TD><TD>1.37571</TD><TD>1.55144</TD>
+     <TD>0.383316</TD><TD>0.435612</TD><TD>0.465404</TD>
+     <TD>0.00490244</TD><TD>0.0135457</TD><TD>0.0672273</TD>
+     <TD>-0.0582606</TD><TD>0.00280975</TD><TD>0.0539804</TD>
+     <TD>-0.0328955</TD><TD>0.0132511</TD><TD>0.0401183</TD>
+     <TD>2.0616</TD><TD>2.34421</TD><TD>3.05211</TD>
+     <TD>0.033457</TD><TD>0.070778</TD><TD>0.0932734</TD>
+     <TD>0.0396853</TD><TD>0.092612</TD><TD>0.120269</TD>
+     <TD>9.16777</TD><TD>9.7524</TD><TD>10.7005</TD>
+     <TD>0.299996</TD><TD>0.299998</TD><TD>0.299999</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -206,28 +206,28 @@
    <DATA><TABLEDATA>
     <TR>
      <TD>1</TD>
-     <TD>26</TD><TD>26</TD><TD>26</TD><TD>26</TD>
-     <TD>25</TD><TD>25</TD><TD>25</TD><TD>25</TD>
-     <TD>2.53644</TD><TD>2.53644</TD><TD>2.53644</TD>
-     <TD>0.539669</TD><TD>0.539669</TD><TD>0.539669</TD>
-     <TD>0.501271</TD><TD>0.501271</TD><TD>0.501271</TD>
-     <TD>1.80957</TD><TD>2.00349</TD><TD>2.03353</TD>
-     <TD>0.54078</TD><TD>0.58042</TD><TD>0.60901</TD>
-     <TD>0.00669134</TD><TD>0.0242002</TD><TD>0.184539</TD>
-     <TD>-0.0565659</TD><TD>0.00588316</TD><TD>0.17008</TD>
-     <TD>-0.0716053</TD><TD>-0.0234742</TD><TD>0.0328852</TD>
-     <TD>2.04419</TD><TD>4.65899</TD><TD>7.84004</TD>
-     <TD>0.0407006</TD><TD>0.0459106</TD><TD>0.0925915</TD>
-     <TD>1.58037</TD><TD>1.83813</TD><TD>1.8654</TD>
-     <TD>0.47157</TD><TD>0.52433</TD><TD>0.558224</TD>
-     <TD>0.00682293</TD><TD>0.0270675</TD><TD>0.213193</TD>
-     <TD>-0.0631402</TD><TD>0.00714812</TD><TD>0.197647</TD>
-     <TD>-0.0799187</TD><TD>-0.0261066</TD><TD>0.0365458</TD>
-     <TD>1.75775</TD><TD>3.82829</TD><TD>6.07154</TD>
-     <TD>0.0406345</TD><TD>0.0457592</TD><TD>0.0893052</TD>
-     <TD>0.0514668</TD><TD>0.0697069</TD><TD>0.18173</TD>
-     <TD>10.9743</TD><TD>12.9518</TD><TD>17.1734</TD>
-     <TD>0.299992</TD><TD>0.299994</TD><TD>0.299996</TD>
+     <TD>87</TD><TD>87</TD><TD>87</TD><TD>87</TD>
+     <TD>76</TD><TD>76</TD><TD>76</TD><TD>76</TD>
+     <TD>2.19326</TD><TD>2.19326</TD><TD>2.19326</TD>
+     <TD>0.466651</TD><TD>0.466651</TD><TD>0.466651</TD>
+     <TD>1.37171</TD><TD>1.37171</TD><TD>1.37171</TD>
+     <TD>1.54298</TD><TD>1.6066</TD><TD>1.7613</TD>
+     <TD>0.462649</TD><TD>0.5024</TD><TD>0.528364</TD>
+     <TD>0.00331174</TD><TD>0.0125584</TD><TD>0.0582726</TD>
+     <TD>-0.0505005</TD><TD>0.000883719</TD><TD>0.046543</TD>
+     <TD>-0.0297672</TD><TD>0.0125273</TD><TD>0.0349129</TD>
+     <TD>2.5557</TD><TD>2.89468</TD><TD>3.97842</TD>
+     <TD>0.0341176</TD><TD>0.0670615</TD><TD>0.0880449</TD>
+     <TD>1.27896</TD><TD>1.37571</TD><TD>1.55144</TD>
+     <TD>0.383316</TD><TD>0.435612</TD><TD>0.465404</TD>
+     <TD>0.00490244</TD><TD>0.0135457</TD><TD>0.0672273</TD>
+     <TD>-0.0582606</TD><TD>0.00280975</TD><TD>0.0539804</TD>
+     <TD>-0.0328955</TD><TD>0.0132511</TD><TD>0.0401183</TD>
+     <TD>2.0616</TD><TD>2.34421</TD><TD>3.05211</TD>
+     <TD>0.033457</TD><TD>0.070778</TD><TD>0.0932734</TD>
+     <TD>0.0396853</TD><TD>0.092612</TD><TD>0.120269</TD>
+     <TD>9.16777</TD><TD>9.7524</TD><TD>10.7005</TD>
+     <TD>0.299996</TD><TD>0.299998</TD><TD>0.299999</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -237,12 +237,12 @@
    <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
    <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
    <DATA><TABLEDATA>
-    <TR><TD>2025-11-07</TD><TD>14:09:31</TD><TD>NTHREADS != 1 ignored: this build of PSFEx is single-threaded</TD></TR>
+    <TR><TD>2025-11-14</TD><TD>19:32:03</TD><TD>NTHREADS != 1 ignored: this build of PSFEx is single-threaded</TD></TR>
    </TABLEDATA></DATA>
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>PSFEx configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="psfex starsFCC184.cat -c default.psfex"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="psfex starsFCC147.cat -c default.psfex"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.psfex"/>
    <PARAM name="Basis_Type" datatype="char" arraysize="*" ucd="meta.code" value="PIXEL_AUTO"/>
    <PARAM name="Basis_Number" datatype="int" ucd="meta.number" value="20"/>

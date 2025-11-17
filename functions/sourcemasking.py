@@ -227,6 +227,7 @@ def centralAnnulusMask(img_model, inner_radius=50, inner_percentage=None):
     function masks a circular annulus of a given radius arounc the center
     of a galaxy.
     """
+    img_model = img_model.copy()
     img_model = np.where(np.isnan(img_model), np.nanmedian(img_model), img_model)
     f = find_galaxy(img_model, quiet=True, plot=False)
     if inner_percentage != None:               # added this to make galaxy size dependent option

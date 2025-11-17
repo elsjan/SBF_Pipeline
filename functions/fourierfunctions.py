@@ -266,7 +266,6 @@ def plotSbfAnalysis(image_ps, expected_ps, sbf, noise, kfit_i, kfit_f,
               label="sbf + noise")
     frame.plot(xrange, sbfToFit(xrange, sbf, 0, expected_ps),
               label="sbf")
-    frame.plot(xrange, expected_ps, c='yellow', label='psf PS')
     frame.axhline(noise, label="noise")
     
     frame.axvline(kfit_i, linestyle=":", c="0.5")

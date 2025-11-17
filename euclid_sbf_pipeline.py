@@ -34,7 +34,7 @@ sys.path.append("./functions")
 from extractdata import maskBrightCentralStars
 from backgroundmodel import backgroundLevelAnalysis
 from ellipsemodels import fitInitialEllipseModel, fitFinalEllipseModel, buildEllipseModel
-from sourcemasking import findInitialSourceMask, findFinalSourceMask, unmaskMaxArea, centralAnnulusMask
+from sourcemasking import findInitialSourceMask, findFinalSourceMask, unmaskMaxArea, centralAnnulusMask, maskCircle
 from empiricalpsf import extractPsfSources
 from fourierfunctions import calculateSBF
 from librarypsfhubble import calculateLibrarySBF
@@ -150,13 +150,26 @@ def maskBadPixels(data_frame, effective_gain=3.1, readnoise=4.5, filter="VIS", m
     return bad_pixel_mask
 
 
-def createRequiredVariables(data, model_final, source_mask_final, total_background, plot=False, image_path=None):
+def createRequiredVariables(data, model_final, source_mask_final, total_background, geometry, plot=False, image_path=None):
     """
     From the data and the model, the nri, model mask, and total mask is returned.
     """
-    mask_model = model_final <= 1 #* total_background   #ballsy change
-    mask_combined = np.array(~(mask_model | source_mask_final), dtype=int)
-    
+
+    # geometry.sma *= 3
+    aperture = EllipticalAperture((geometry.x0, geometry.y0), geometry.sma, geometry.sma*(1-geometry.eps), geometry.pa)
+    aperture_mask_obj = aperture.to_mask(method='center',subpixels=1)
+    aperture_mask = aperture_mask_obj.to_image(data.shape).astype(bool)
+
+    inner_radius = geometry.sma*0.15
+
+    mask_center = maskCircle(data, geometry.x0, geometry.y0, rout=inner_radius, rin=0)
+
+
+    # mask_model = model_final <= 1.5 #* total_background   #ballsy change
+    # mask_combined = np.array(~(mask_model | source_mask_final), dtype=int)
+
+    mask_combined = np.array(~(mask_center | source_mask_final), dtype=int)
+    mask_combined = aperture_mask&mask_combined
     nri = (data - model_final)/np.sqrt(model_final)
     nri[np.isinf(nri)] = 0
     
@@ -173,14 +186,16 @@ def createRequiredVariables(data, model_final, source_mask_final, total_backgrou
             image_title = "7.1_nri.png"
             plt.savefig(image_path + "/" + image_title)
         plt.show()
-    return mask_model, mask_combined, nri
+    return aperture_mask, mask_combined, nri
 
 def MainExtractData(file_path, filter="VIS"):
     """
     New version of extractData function
     """
     data, exptime, mzp = openFits(file_path)
+    mask_nan = np.isnan(data)
     mask_cr = maskBadPixels(data, filter=filter)
+    mask_cr = mask_cr | mask_nan
     return data, mask_cr, exptime, mzp
 
 def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=False, image_path=None):
@@ -193,8 +208,9 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
     elif final==True:
         nclip_sm = 0
         title_str = "Final Ellipse Fit"
-    data = np.where(np.isnan(data), np.nanmedian(data), data)
-    f = find_galaxy(data, quiet=True) # np.ma.masked_array(data, np.isnan(data)),
+    nonandata = np.where(np.isnan(data), np.nanmedian(data), data)
+
+    f = find_galaxy(nonandata, quiet=True) # np.ma.masked_array(data, np.isnan(data)),
     geometry = EllipseGeometry(x0=f.ypeak, y0=f.xpeak, 
                                sma=f.majoraxis/sma_normfactor, eps=f.eps, 
                                pa=(90+f.pa)*np.pi/180, astep=0.1)
@@ -206,9 +222,8 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
         masked_data.mask = ~(~masked_data.mask | centralAnnulusMask(masked_data, inner_radius=10))
 
     ellipse = Ellipse(masked_data, geometry)
-
+    aperture = EllipticalAperture((geometry.x0, geometry.y0), geometry.sma, geometry.sma*(1-geometry.eps), geometry.pa)
     if plot:
-        aperture = EllipticalAperture((geometry.x0, geometry.y0), geometry.sma, geometry.sma*(1-geometry.eps), geometry.pa)
         fig, ax = plt.subplots(figsize=(8, 8))
         imdisplay(masked_data, ax, percentlow=1, percenthigh=95, scale='log')
         aperture.plot(color='red', lw=1.5)
@@ -232,17 +247,18 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
             break
         else: 
             nclip_sm += 1
-    if len(isolist) == 0:
-        print("Trying fixed ellipticity for ellipse fitting...")
-        isolist = ellipse.fit_image(nclip=2, fix_center=True, fix_pa=True, fix_eps=True
-                            , fflag=0.5, step=0.1)
-                            # maxsma=1.5*geometry.sma) 
-                            # sma0=10,
-                            # minsma=0.0,
-                            # maxsma=150.0),      # half of image size, covers galaxy
-                        #     step=0.3,          # fine enough for detail
-                        #     linear=True      # additive step
-                        # )
+    # if len(isolist) == 0:
+    #     print("Trying fixed ellipticity for ellipse fitting...")
+    #     isolist = ellipse.fit_image(nclip=2, fflag=0.5, step=0.1)
+    #                                 #, fix_center=True, fix_pa=True, fix_eps=True
+                            
+    #                         # maxsma=1.5*geometry.sma) 
+    #                         # sma0=10,
+    #                         # minsma=0.0,
+    #                         # maxsma=150.0),      # half of image size, covers galaxy
+    #                     #     step=0.3,          # fine enough for detail
+    #                     #     linear=True      # additive step
+    #                     # )
     if len(isolist) == 0:
         print("Trying larger step size for ellipse fitting...")
         isolist = ellipse.fit_image(nclip=2, fix_center=True, fix_pa=True, fix_eps=True
@@ -257,7 +273,7 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
     if len(isolist) == 0:
         print("Ellipse fitting failed")
         sys.exit()
-    range_outward = int(geometry.sma*1.5)  #just a guess right now
+    range_outward = int(geometry.sma*1.3)  #just a guess right now
     model_basic = buildEllipseModel(masked_data.shape, isolist, range_outward=range_outward, 
                                         high_harmonics=True, gridspacing=0.1)
     
@@ -279,7 +295,7 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
             image_title = "5.2_isophote_model_residuals.png"
             plt.savefig(image_path + "/" + image_title)   
         plt.show()
-    return residual_basic, model_basic
+    return residual_basic, model_basic, geometry
 
 def maskBackgroundSources(data, mask_cr=None, plot=False, detect_thresh=3, minarea=7, maxarea=None, r=2.5, image_path=None, final=False, original_image=None):
     """
@@ -306,11 +322,6 @@ def maskBackgroundSources(data, mask_cr=None, plot=False, detect_thresh=3, minar
 
     # Combine
     mask_combined = mask_sources | mask_cr
-    if final:
-        if original_image.all() == None:
-            mask_combined = mask_combined | centralAnnulusMask(data, inner_percentage=0.15)  #change this to be galaxy/filter specific
-        else:
-            mask_combined = mask_combined | centralAnnulusMask(original_image, inner_percentage=0.15)
 
     if plot:
         fig, ax = plt.subplots(figsize=(8, 8))
@@ -408,21 +419,27 @@ def appSBFmagnitude(sbf, mzp):
 ###############
 
 
-def MainPipeline(file_path, image_path=None, make_plots=True, psf=None, maxarea_sourcemask=None, filter="VIS", background_estimation=False):
+def MainPipeline(data_path, file_path=None, image_path=None, make_plots=True, psf=None, maxarea_sourcemask=None, filter="VIS", background_estimation=False):
     """
     Combining the original with the new functions
     """
+    print("version 1")
     print("\n1. Extracting the data ...")
-    data, mask_cr, exptime, mzp = MainExtractData(file_path, filter=filter)
-    
+    data, mask_cr, exptime, mzp = MainExtractData(data_path, filter=filter)
+    fig, ax = plt.subplots(figsize=(8, 8))
+    imdisplay(data, ax, percentlow=1, percenthigh=99, scale='asinh')
+    plt.title("Raw data")
+    image_title = "1.1_raw_data.png"
+    plt.savefig(image_path + "/" + image_title)
+
     if background_estimation:
         print("\n2. Performing background estimation ...")
-        mask_nan = ~np.isfinite(data)
-        background = sep.Background(data.astype(np.float32), mask=(mask_cr | mask_nan), bw=64, bh=64, fw=3, fh=3)
+        # mask_nan = ~np.isfinite(data)
+        background = sep.Background(data.astype(np.float32), mask=mask_cr, bw=64, bh=64, fw=3, fh=3)
         total_bckgr = background.globalback - background.globalrms
         data -= total_bckgr
         bckgr_evol, data, total_bckgr, std_bckgr= backgroundLevelAnalysis(data, total_bckgr, make_plots, image_path=image_path)
-
+        print(total_bckgr)
         print("\n Total background is", background.globalback, background.globalrms)
     else:
         print("\n2. No background estimation performed ...")
@@ -431,21 +448,21 @@ def MainPipeline(file_path, image_path=None, make_plots=True, psf=None, maxarea_
     # plt.imshow(background.back())
     # plt.show()
     print("\n3. Fitting initial ellipse model ...")
-    residual_basic, model_basic = MainFitEllipseModel(data, mask_cr=~mask_cr, plot=make_plots, final=False)
+    residual_basic, model_basic, geometry = MainFitEllipseModel(data, mask_cr=~mask_cr, plot=make_plots, final=False)
 
     print("\n4. Finding initial source mask ...")
-    source_mask = maskBackgroundSources(residual_basic, mask_cr=mask_cr, plot=make_plots, maxarea=maxarea_sourcemask)
+    source_mask = maskBackgroundSources(residual_basic, mask_cr=mask_cr, plot=make_plots, maxarea=maxarea_sourcemask, r=3)
     # source_mask, center_sources = findInitialSourceMask(residual_basic, model_basic, "VIS",  "flt", ~mask_cr, plot=make_plots, image_path=image_path)
 
     print("\n5. Fitting final ellipse model ...")
-    residual_final, model_final = MainFitEllipseModel(data, mask_cr=~source_mask, plot=make_plots, final=True, image_path=image_path)
+    residual_final, model_final, geometry = MainFitEllipseModel(data, mask_cr=~source_mask, plot=make_plots, final=True, image_path=image_path)
 
     print("\n6. Finding final source mask ...")
-    source_mask_final = maskBackgroundSources(residual_final, mask_cr=mask_cr, plot=make_plots, maxarea=maxarea_sourcemask, image_path=image_path, final=True, original_image=data)
+    source_mask_final = maskBackgroundSources(residual_final, mask_cr=mask_cr, plot=make_plots, maxarea=maxarea_sourcemask, image_path=image_path, final=True, original_image=data, r=3)
     # source_mask_final, residual_power, sig_res_power = findFinalSourceMask(residual_final, model_final, "VIS",  "flt", mask0=~mask_cr, plot=make_plots, image_path=image_path)
 
     print("\n7. Creating required variables ...")
-    mask_model, mask_combined, nri = createRequiredVariables(data, model_final, source_mask_final, total_bckgr, plot=make_plots, image_path=image_path)
+    mask_model, mask_combined, nri = createRequiredVariables(data, model_final, source_mask_final, total_bckgr, geometry, plot=make_plots, image_path=image_path)
     
     print("\n8 Calculate power spectra  ...")
     # fp, ps = ps_compute(nri, plot_ps=make_plots, plot_ft=make_plots)
@@ -460,10 +477,15 @@ def MainPipeline(file_path, image_path=None, make_plots=True, psf=None, maxarea_
                                                        fit_range_i=0.1, fit_range_f=0.6,  
                                                        plot=make_plots,
                                                        image_path=image_path)
-    
+    print("\n9. Calculate sbf magnitude")
     sbfmag = appSBFmagnitude(sbf, mzp)
     print("\nSBF amplitude:", sbf)
     print("\nApparent SBF magnitude:", sbfmag)
+
+    # print("\n10. ")
+    if file_path != None:
+        np.savetxt(file_path + "/data_background_subtracted", data)
+        np.savetxt(file_path + "/combined_final_mask", mask_combined)
 
     return data, mask_model, mask_combined, nri, image_ps, expected_ps, sbf, noise, sbfmag
 
