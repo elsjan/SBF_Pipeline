@@ -219,7 +219,7 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
     x0, y0 = int(geometry.x0), int(geometry.y0)
     if masked_data.mask[y0, x0]:
         print("Center pixel is masked — unmasking central area.")
-        masked_data.mask = ~(~masked_data.mask | centralAnnulusMask(masked_data, inner_radius=10))
+        masked_data.mask = ~(~masked_data.mask | centralAnnulusMask(nonandata, inner_radius=10))
 
     ellipse = Ellipse(masked_data, geometry)
     aperture = EllipticalAperture((geometry.x0, geometry.y0), geometry.sma, geometry.sma*(1-geometry.eps), geometry.pa)
