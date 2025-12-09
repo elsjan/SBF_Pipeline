@@ -4,30 +4,179 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.wcs import WCS   # In order to get the shift for overlaying frames
 
-import lacosmic # for cosmic ray detection
+from astroscrappy import detect_cosmics
+import lacosmic 
 
-import sep
-
-from os import listdir
+import os
 
 from mgefit.find_galaxy import find_galaxy
 
 from sourcemasking import obtainSextractorSources
+from plotting import imdisplay
 
 
 # -------------------------------------------------------------------------------
 
-def openFits(file_path, k=0):   #Euclid data type version right now!!!
+def openFits(file_path):
     """
-    Open a fits file (works well with HST data), extract the data,
-    exposure time, and wcs object (required for position information)
+    Open a SINGLE fits file, extract the data,
+    magnitude_zero point, and wcs object (required for position information)
+    Not always is the mzp in this keyword
     """
-    with fits.open(file_path) as hdu:
-        data = hdu[k].data
-        exptime = hdu[0].header["EXPTIME"]
-        wcs = WCS(hdu[k].header)
-    return data, exptime, wcs
+    for file in os.listdir(file_path):
+        if ".fits" in file:
+            with fits.open(file_path+ "/" + file) as hdu:
+                data = hdu[0].data
+                wcs = WCS(hdu[0].header)
+                mzp = hdu[0].header['ZP_STACK']
+                hdu.close()
+    return data, wcs, mzp
 
+def maskBrightCentralStars(frame, idx_border=25):
+    """
+    Identify bright stars in the frame, within a border of 25 pix
+    from the outside of the frame
+    """
+    border_mask = np.zeros(frame.shape, dtype=bool)
+    border_mask[idx_border:-idx_border,idx_border:-idx_border] = 1
+    
+    _, segmap = obtainSextractorSources(frame, border_mask, 
+                                        thr=50, max_area=50)
+    
+    star_mask = segmap != 0
+    
+    return star_mask
+    
+    
+def maskBadPixelsLacosmic(data_frame, effective_gain=2.3, readnoise=20):
+    """
+    Identify and mask the position of cosmic rays and bad pixels 
+    (in an HST image) using te lacosmic procedure in combination with
+    sextractor (sep). 
+    1. First, we mask bright stars in the central area
+    2. Then the negative outliers are identified.
+    3. Cosmic rays are identified in the resulting image
+    """
+    data_frame = data_frame.byteswap().newbyteorder() # some necessary conversion
+    
+    star_mask = maskBrightCentralStars(data_frame)
+                        
+    # Parameters for lacosmic are typical for HST observations
+    clean_frame, mask_neg = lacosmic(-data_frame, mask=star_mask,
+                                      contrast=4, cr_threshold=4.5,
+                                      neighbor_threshold=0.3,
+                                      effective_gain=effective_gain,
+                                      readnoise=readnoise)
+    
+    
+    _, mask_pos = lacosmic(-clean_frame, mask=star_mask, 
+                            contrast=4, cr_threshold=4.5, 
+                            neighbor_threshold = 0.3, 
+                            effective_gain=effective_gain, 
+                            readnoise=readnoise)
+    
+    bad_pixel_mask = mask_neg | mask_pos
+    
+    return bad_pixel_mask
+
+
+def maskBadPixelsAstroscrappy(data_frame, effective_gain=3.1, readnoise=4.5, filter="VIS", mask_filename=None):
+    """
+    Identify and mask remaining bad pixels in Euclid VIS ERO images.
+    Euclid images are already flat-fielded and cosmic-ray cleaned,
+    so thresholds are gentler than HST defaults.
+    """
+    
+    # Optional: mask bright stars if relevant
+    try:
+        star_mask = maskBrightCentralStars(data_frame)
+    except Exception:
+        star_mask = np.zeros_like(data_frame, dtype=bool)
+    
+    # Gentle cosmic-ray detection
+    if filter == "VIS":
+        mask_cr, clean_frame = detect_cosmics(
+            data_frame,
+            gain=effective_gain,
+            readnoise=readnoise,
+            sigclip=6.0,
+            sigfrac=0.5,
+            objlim=5.0,
+            satlevel=65535.0,  # Euclid VIS saturation (approx)
+            verbose=False
+        )
+    elif filter == "H":
+        mask_cr, clean_frame = detect_cosmics(
+            data_frame,
+            gain=effective_gain,
+            readnoise=readnoise,
+            sigclip=5.0,
+            sigfrac=0.4,
+            objlim=4.0,
+            satlevel=1.118e5,  # Euclid NIR saturation (approx)
+            verbose=False
+        )
+    else:
+        print("Reminder to set the NIR filter parameters correctly!")
+    bad_pixel_mask = mask_cr | star_mask
+
+    # optional: mask known bad pixel regions from Euclid consortium
+    # mask_euclid = fits.getdata(mask_filename).astype(bool)
+    # bad_pixel_mask = bad_pixel_mask | mask_euclid
+    
+    return bad_pixel_mask
+
+
+
+
+
+#############################################################################
+# Main function
+#############################################################################
+
+    
+def extractData(data_path, file_path=None, image_path=None, filter="VIS", cosmic_ray_method='astroscrappy',make_plots=True, plot_plots=True):
+    """
+    New version of extractData function
+    """
+        # make sure file and image path exist 
+    if file_path != None:
+        try:
+            os.makedirs(file_path)
+        except FileExistsError:
+            pass
+
+    if image_path != None:
+        try:
+            os.makedirs(image_path)
+        except FileExistsError:
+            pass
+    data, wcs, mzp = openFits(data_path)
+    mask_nan = np.isfinite(data)
+    if cosmic_ray_method == 'astroscrappy':
+        mask_cr = maskBadPixelsAstroscrappy(data, filter=filter)
+    elif cosmic_ray_method == 'lacosmic':
+        mask_cr = maskBadPixelsLacosmic(data, filter=filter)
+    mask_cr = mask_cr | ~mask_nan
+    
+    if make_plots:
+        fig, ax = plt.subplots(figsize=(8, 8))
+        imdisplay(data, ax, percentlow=1, percenthigh=99, scale='asinh')
+        plt.title("Raw data")
+        image_title = "1.1_raw_data.png"
+        if image_path != None:
+            plt.savefig(image_path + "/" + image_title)
+        if plot_plots:
+            plt.show()
+        plt.close()
+
+    return data, mask_cr, wcs, mzp
+    
+
+
+###############################################################################
+# Old unused functions
+###############################################################################
 
 def meanIntensity(data, mask):
     """ 
@@ -101,7 +250,7 @@ def extractFileList(folder):
     exptime = []
     wcs_obj = []
 
-    for file in listdir(folder):
+    for file in os.listdir(folder):
         if ".fits" in file:
             dat, exp, wcs = openFits(folder + "/" + file)
             data.append(dat)
@@ -132,54 +281,6 @@ def overlapFrames(frame1, frame2, x0_1, y0_1, x0_2, y0_2):
     cutout_2 = frame2[x0_2-lower_x:x0_2+upper_x, y0_2-lower_y:y0_2+upper_y]    
     
     return cutout_1, cutout_2, lower_x, lower_y
-
-
-def maskBrightCentralStars(frame, idx_border=25):
-    """
-    Identify bright stars in the frame, within a border of 25 pix
-    from the outside of the frame
-    """
-    border_mask = np.zeros(frame.shape, dtype=bool)
-    border_mask[idx_border:-idx_border,idx_border:-idx_border] = 1
-    
-    _, segmap = obtainSextractorSources(frame, border_mask, 
-                                        thr=50, max_area=50)
-    
-    star_mask = segmap != 0
-    
-    return star_mask
-    
-    
-def maskBadPixels(data_frame, effective_gain=2.3, readnoise=20):
-    """
-    Identify and mask the position of cosmic rays and bad pixels 
-    (in an HST image) using te lacosmic procedure in combination with
-    sextractor (sep). 
-    1. First, we mask bright stars in the central area
-    2. Then the negative outliers are identified.
-    3. Cosmic rays are identified in the resulting image
-    """
-    data_frame = data_frame.byteswap().newbyteorder() # some necessary conversion
-    
-    star_mask = maskBrightCentralStars(data_frame)
-                        
-    # Parameters for lacosmic are typical for HST observations
-    clean_frame, mask_neg = lacosmic(-data_frame, mask=star_mask,
-                                      contrast=4, cr_threshold=4.5,
-                                      neighbor_threshold=0.3,
-                                      effective_gain=effective_gain,
-                                      readnoise=readnoise)
-    
-    
-    _, mask_pos = lacosmic(-clean_frame, mask=star_mask, 
-                            contrast=4, cr_threshold=4.5, 
-                            neighbor_threshold = 0.3, 
-                            effective_gain=effective_gain, 
-                            readnoise=readnoise)
-    
-    bad_pixel_mask = mask_neg | mask_pos
-    
-    return bad_pixel_mask
 
 
 def findAndApplyIntegerPixelShifts(data, mask, wcs, exptime, max_frame_size=1200):
@@ -381,12 +482,7 @@ def extractDataDrz(folder, estimate_background=False):
 
 
 
-#############################################################################
-# Main function
-#############################################################################
-
-
-def extractData(folder, file_type="flt", estimate_background=False):
+def OLDextractData(folder, file_type="flt", estimate_background=False):
     """
     - Extract all the data from a folder.
     - Process the data such that background is subtracted and bad sources masked
@@ -404,5 +500,3 @@ def extractData(folder, file_type="flt", estimate_background=False):
     else:
         print("Error: filetype must be either 'flt' or 'dr'. Please  try again.")
         return [[0], [0], 0, 0, [0]]
-    
-    

@@ -5,8 +5,9 @@
 ##########################################################################
 
 import numpy as np
-from tqdm.notebook import tqdm
+from tqdm import tqdm  # changed to not-notebook version
 
+import sep
 # mgefit find_galaxy: To find the peak & orientation of a galaxy in an image
 from mgefit.find_galaxy import find_galaxy
 
@@ -22,7 +23,6 @@ from ellipsemodels import obtainEllipseInstance, obtainIsolistInstance
 
 # In order to make plots
 from matplotlib.pyplot import figure, show, savefig
-
 
 
 # -----------------------------------------------------------------------------------------
@@ -91,34 +91,7 @@ def findBackgroundNoise(data, fit_number, sclip=0, nclip=0, plot=False,
     return noise_level
 
 
-# def iterateBackgroundNoise(data, max_iter=10, fit_number=20, plot=False, 
-#                            initial_background=0, n_std=6):
-#     """
-#     Function iterates over the galaxy anumber of times, after which
-#     the background level gets subtracted after each iteration.
-    
-#     Returned is the array of background levels found after each iteration. 
-#     If tge updated background is 0 (no isolist could be fit), the algorithm stops.
-#     """
-#     bckgr_level = [0]
-#     # bounds for iteration to stop:
-#     if plot:
-#         n_array = np.ceil(np.sqrt(max_iter))
-#         fig = figure(figsize=[20,15])
-#         subplots = [fig.add_subplot(n_array, n_array, idx+1) for idx in range(max_iter)]
-        
-#     for idx in tqdm(range(max_iter)):
-#         bckgr_level_idx = findBackgroundNoise(data-np.sum(bckgr_level), 
-#                                               fit_number, plot=plot, 
-#                                               frame=subplots[idx], plot_number=idx+1)
-#         if bckgr_level_idx==0:
-#             break
-#         bckgr_level.append(bckgr_level_idx)
-    
-#     return bckgr_level
-
-
-def iterateBackgroundNoise(data, max_iter=10, fit_number=20, plot=False, 
+def iterateBackgroundNoise(data, max_iter=10, fit_number=20, make_plots=False, plot_plots=True, 
                            initial_background=0, n_std=6, image_path=None):
     """
     Function iterates over the galaxy anumber of times, after which
@@ -129,26 +102,26 @@ def iterateBackgroundNoise(data, max_iter=10, fit_number=20, plot=False,
     """
 
     bckgr_level = [0]
-    if plot==True:
+    if make_plots:
         n_array = np.ceil(np.sqrt(max_iter))
         fig = figure(figsize=[19,15])
-        print(n_array, np.shape(n_array))
         subplots = [fig.add_subplot(int(n_array), int(n_array), idx+1) for idx in range(max_iter)]
     else:
         subplots = np.zeros(max_iter) # need for a placeholder
         
     for idx in tqdm(range(max_iter)):
         bckgr_level_idx = findBackgroundNoise(data-np.sum(bckgr_level), 
-                                              fit_number, plot=plot, 
+                                              fit_number, plot=make_plots, 
                                               frame=subplots[idx], plot_number=idx+1)
         if bckgr_level_idx==0:
             break
         bckgr_level.append(bckgr_level_idx)
     
-    if plot==True:
+    if make_plots:
         if image_path != None:
             savefig(image_path + "/2.1_iterated_sersic_fits.png")
-        show()
+        if plot_plots:
+            show()
         
     return bckgr_level
 
@@ -165,7 +138,7 @@ def interpolateNanValues(data_frame):
     return np.array(df_interpolated)
     
 
-def backgroundLevelAnalysis(data_combined, initial_background, plot,
+def backgroundLevelAnalysis(data_combined, initial_background, make_plots, plot_plots=True,
                            n_iter=20, n_std=15, file_type="flt", image_path=None):
     """
     Iterates background noise, returns the total noise, and corrected data frame.
@@ -180,7 +153,7 @@ def backgroundLevelAnalysis(data_combined, initial_background, plot,
         data_combined = interpolateNanValues(data_combined)
         
     iterated_bckgr_level = iterateBackgroundNoise(data_combined, max_iter=n_iter, 
-                                                  plot=plot, 
+                                                  make_plots=make_plots, plot_plots=plot_plots,
                                                   initial_background=initial_background, 
                                                   n_std=n_std, image_path=image_path)
     
@@ -192,11 +165,12 @@ def backgroundLevelAnalysis(data_combined, initial_background, plot,
 
     data = data_combined + initial_background - final_background
     
-    if plot:
+    if make_plots:
         plotTotalNoiseDevelopment(bckgr_evolution, final_background, background_std)
         if image_path != None:
             savefig(image_path + "/2.2_total_noise_development.png")
-        show()
+        if plot_plots:
+            show()
     
     return bckgr_evolution, data, final_background, background_std
 
@@ -252,4 +226,31 @@ def plotTotalNoiseDevelopment(bckgr_sum, mean_backgr, std_backgr, frame=None):
     
     return
 
-    
+############################################################################
+# Main background estimation function
+############################################################################
+
+def mainBackgroundEstimation(data, mask_cr, image_path=None, make_plots=True, plot_plots=True):
+    background = sep.Background(data.astype(np.float32), mask=mask_cr, bw=64, bh=64, fw=3, fh=3)
+    total_bckgr = background.globalback
+    data -= total_bckgr
+    bckgr_evol, data, total_bckgr, std_bckgr = backgroundLevelAnalysis(data, total_bckgr, make_plots, plot_plots=plot_plots, image_path=image_path)
+    if len(bckgr_evol) < 3:
+        print("Redoing background estimation with lower starting value")
+        data += total_bckgr
+        total_bckgr = background.globalback - background.globalrms
+        data -= total_bckgr
+        bckgr_evol, data, total_bckgr, std_bckgr = backgroundLevelAnalysis(data, total_bckgr, make_plots, plot_plots=plot_plots, image_path=image_path)
+    if len(bckgr_evol) < 3:
+        print("Redoing background estimation with higher starting value")
+        data += total_bckgr
+        total_bckgr = background.globalback + background.globalrms
+        data -= total_bckgr
+        bckgr_evol, data, total_bckgr, std_bckgr = backgroundLevelAnalysis(data, total_bckgr, make_plots, plot_plots=plot_plots, image_path=image_path)
+    if len(bckgr_evol) < 3:
+        print("Background estimation not working, using sextractor value instead")
+        data += total_bckgr
+        total_bckgr = background.globalback
+        data -= total_bckgr
+    sex_bckgr = background.globalback
+    return data, total_bckgr, sex_bckgr

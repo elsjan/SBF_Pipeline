@@ -185,7 +185,7 @@ def getSbfComponents(residual_fluctuations, mask, psf, norm_type):
     return image_ps, expected_ps
 
 
-def fitSbfComponents(image_ps, expected_ps, kfit_i, kfit_f, plot, image_path=None,
+def fitSbfComponents(image_ps, expected_ps, kfit_i, kfit_f, make_plots=False,plot_plots=False, image_path=None,
                      image_title=None):
     """
     Function that performs the fit of the SBF components, given the 
@@ -203,16 +203,16 @@ def fitSbfComponents(image_ps, expected_ps, kfit_i, kfit_f, plot, image_path=Non
     
     sbf, noise = fit_params
     
-    if plot==True:
+    if make_plots==True:
         plotSbfAnalysis(image_ps, expected_ps, sbf, noise, kfit_i, kfit_f, 
-                        image_path=image_path, image_title=image_title)
+                        image_path=image_path, image_title=image_title, plot_plots=plot_plots)
         
     return sbf, noise
     
 
 def calculateSBF(residual_fluctuations, mask, psf,
                  norm_type = None,
-                 fit_range_i=0.2, fit_range_f=0.6, plot=False, 
+                 fit_range_i=0.2, fit_range_f=0.6, make_plots=False,plot_plots=False, 
                  image_path=None, image_title=None):
     """
     Function that calculates the Surface Brightness Fluctuation 
@@ -238,11 +238,13 @@ def calculateSBF(residual_fluctuations, mask, psf,
     kfit_f = int(fit_range_f*len(image_ps))
     
     sbf, noise = fitSbfComponents(image_ps, expected_ps, kfit_i, kfit_f, 
-                                  plot, image_path, image_title)
+                                  image_path=image_path, image_title=image_title, make_plots=make_plots,plot_plots=plot_plots)
     
     return image_ps, expected_ps, sbf, noise 
 
-
+def appSBFmagnitude(sbf, mzp):
+    m = -2.5 * np.log10(sbf) + mzp
+    return m
 
 ##########################################################################
 # For plotting
@@ -251,7 +253,7 @@ def calculateSBF(residual_fluctuations, mask, psf,
 import matplotlib.pyplot as plt
 
 def plotSbfAnalysis(image_ps, expected_ps, sbf, noise, kfit_i, kfit_f,
-                    image_path=None, image_title=None):
+                    image_path=None, image_title=None, plot_plots=True):
     """
     Function that makes a plot of the fitted Fourier Power Spectrum SBF analysis
     """
@@ -283,8 +285,8 @@ def plotSbfAnalysis(image_ps, expected_ps, sbf, noise, kfit_i, kfit_f,
         if image_title==None:
             image_title = "9.1_power_spectrum_fit.png"
         plt.savefig(image_path + "/" + image_title)
-    
-    plt.show()
+    if plot_plots:
+        plt.show()
     
     return
     

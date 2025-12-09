@@ -2,8 +2,13 @@ import numpy as np
 import sep
 import matplotlib.pyplot as plt
 from mgefit.find_galaxy import find_galaxy
+from photutils.isophote import EllipseGeometry
+from photutils.aperture import EllipticalAperture
 
+
+# own functions
 from residualpowerestimator import findMaskAndResidualPower
+from plotting import imdisplay
 
 def dataCutout(data, x0, y0, frame=250):
     """
@@ -222,23 +227,112 @@ def findMaskAndSepObjects(image, mask_0, img_model, thr,
         return segmap, objects
     
 
-def centralAnnulusMask(img_model, inner_radius=50, inner_percentage=None):
+def centralAnnulusMask(img_model, geometry=None, inner_radius=50, inner_percentage=None):
     """
     function masks a circular annulus of a given radius arounc the center
     of a galaxy.
     """
     img_model = img_model.copy()
     img_model = np.where(np.isnan(img_model), np.nanmedian(img_model), img_model)
-    f = find_galaxy(img_model, quiet=True, plot=False)
+    if geometry == None:
+        f = find_galaxy(img_model, quiet=True, plot=False)
+        if f.pa < 90:
+            geometry = EllipseGeometry(x0=f.ypeak, y0=f.xpeak, 
+                                sma=f.majoraxis, eps=f.eps, 
+                                pa=(f.pa+90)*np.pi/180, astep=0.1)
+        else:
+            geometry = EllipseGeometry(x0=f.ypeak, y0=f.xpeak, 
+                                sma=f.majoraxis, eps=f.eps, 
+                                pa=(f.pa-90)*np.pi/180, astep=0.1) 
     if inner_percentage != None:               # added this to make galaxy size dependent option
-        inner_radius = f.majoraxis*inner_percentage
-    mask = maskCircle(img_model, f.ypeak, f.xpeak, rout=inner_radius, rin=0)
+        inner_radius = geometry.sma*inner_percentage
+    mask = maskCircle(img_model, geometry.x0, geometry.y0, rout=inner_radius, rin=0)
     return mask
     
 ##############################################################################################
 # MAIN functions
 ##############################################################################################
 
+def maskBackgroundSources(data, mask_cr=None, make_plots=False, plot_plots=False, detect_thresh=3, minarea=7, maxarea=None, r=2.5, image_path=None, final=False, original_image=None):
+    """
+    Detect and mask background sources using SEP (SExtractor).
+    Works with masked arrays or normal numpy arrays.
+    """
+
+    # Estimate and subtract background
+    bkg = sep.Background(data.astype(np.float32), mask=mask_cr, bw=64, bh=64, fw=3, fh=3)
+    # data_sub = data - bkg.back()
+
+    # Detect sources
+    objects, segmap = sep.extract(data, thresh=detect_thresh * bkg.globalrms,
+                          mask=mask_cr, minarea=minarea, segmentation_map=True)
+    if maxarea != None:
+        objects, segmap = unmaskMaxArea(objects, segmap, maxarea)
+
+    # Mask them
+    mask_sources = np.zeros(data.shape, dtype=bool)
+    sep.mask_ellipse(mask_sources, objects['x'], objects['y'],
+                     objects['a'], objects['b'], objects['theta'], r=r)
+
+    # Combine
+    mask_combined = mask_sources | mask_cr
+
+    if make_plots:
+        fig, ax = plt.subplots(figsize=(8, 8))
+        imdisplay(data, ax, percentlow=1, percenthigh=99, scale='asinh')
+        plt.title("Detected Sources Mask")
+        plt.imshow(mask_combined, origin='lower', cmap='Reds', alpha=0.5)
+        if image_path != None:
+            image_title = "6.1_source_mask.png"
+            plt.savefig(image_path + "/" + image_title)
+        if plot_plots:
+            plt.show()
+
+    
+    return mask_combined
+
+def createRequiredVariables(data, model_final, source_mask_final, total_background, geometry, make_plots=False, plot_plots=False, image_path=None):
+    """
+    From the data and the model, the nri, model mask, and total mask is returned.
+    """
+
+    # geometry.sma *= 3
+    aperture = EllipticalAperture((geometry.x0, geometry.y0), geometry.sma, geometry.sma*(1-geometry.eps), geometry.pa)
+    aperture_mask_obj = aperture.to_mask(method='center',subpixels=1)
+    aperture_mask = aperture_mask_obj.to_image(data.shape).astype(bool)
+
+    inner_radius = geometry.sma*0.15
+
+    mask_center = maskCircle(data, geometry.x0, geometry.y0, rout=inner_radius, rin=0)
+
+
+    # mask_model = model_final <= 1.5 #* total_background   #ballsy change
+    # mask_combined = np.array(~(mask_model | source_mask_final), dtype=int)
+
+    mask_combined = ~(mask_center | source_mask_final)
+    mask_combined &= aperture_mask
+
+    nri = (data - model_final) / np.sqrt(model_final)
+    nri[~np.isfinite(nri)] = 0
+
+    nri *= mask_combined
+
+    if make_plots:
+        fig, ax = plt.subplots(figsize=(8, 8))
+        imdisplay(nri, ax, percentlow=1, percenthigh=99, scale='linear')
+        plt.title("NRI")
+        if image_path != None:
+            image_title = "7.1_nri.png"
+            plt.savefig(image_path + "/" + image_title)
+        if plot_plots:
+            plt.show()
+    return aperture_mask, mask_combined, nri
+
+
+##############################################################################################
+# Unused old functions
+# Maybe double check to make sure
+##############################################################################################
 
 
 def obtainSepParameters(obs_filter, data_type):
