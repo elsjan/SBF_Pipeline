@@ -1,0 +1,10 @@
+numpy
+matplotlib
+astropy
+lacosmic
+sep
+mgefit
+tqdm
+pandas
+photutils
+ipywidgets

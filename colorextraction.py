@@ -21,7 +21,6 @@ def downscale_mask_majority(mask, factor=3):
     return true_count >= ((factor * factor) // 2 + 1)
 
 def trim(data, p):
-    print(p)
     p = int(p)//2
     
     data_new = data[p:-p,p:-p]

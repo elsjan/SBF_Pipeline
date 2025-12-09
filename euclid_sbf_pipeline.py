@@ -14,7 +14,7 @@ import scipy as sc
 from astropy.io import fits
 from astropy.wcs import WCS 
 from astroscrappy import detect_cosmics
-from photutils.isophote import Ellipse, EllipseGeometry, build_ellipse_model
+from photutils.isophote import Ellipse, EllipseGeometry, Isophote, IsophoteList, build_ellipse_model
 from photutils.aperture import EllipticalAperture
 from mgefit.find_galaxy import find_galaxy
 from inspect import getsource
@@ -168,16 +168,24 @@ def createRequiredVariables(data, model_final, source_mask_final, total_backgrou
     # mask_model = model_final <= 1.5 #* total_background   #ballsy change
     # mask_combined = np.array(~(mask_model | source_mask_final), dtype=int)
 
-    mask_combined = np.array(~(mask_center | source_mask_final), dtype=int)
-    mask_combined = aperture_mask&mask_combined
-    nri = (data - model_final)/np.sqrt(model_final)
-    nri[np.isinf(nri)] = 0
-    
-    mask_combined = ~np.isnan(nri)&mask_combined
-    
-    nri[np.isnan(nri)] = 0
+    mask_combined = ~(mask_center | source_mask_final)
+    mask_combined &= aperture_mask
+
+    nri = (data - model_final) / np.sqrt(model_final)
+    nri[~np.isfinite(nri)] = 0
 
     nri *= mask_combined
+
+    # mask_combined = np.array(~(mask_center | source_mask_final), dtype=int)
+    # mask_combined = aperture_mask&mask_combined
+    # nri = (data - model_final)/np.sqrt(model_final)
+    # nri[np.isinf(nri)] = 0
+    
+    # mask_combined = ~np.isnan(nri)&mask_combined
+    
+    # nri[np.isnan(nri)] = 0
+
+    # nri *= mask_combined
     if plot:
         fig, ax = plt.subplots(figsize=(8, 8))
         imdisplay(nri, ax, percentlow=1, percenthigh=99, scale='linear')
@@ -198,6 +206,42 @@ def MainExtractData(file_path, filter="VIS"):
     mask_cr = mask_cr | mask_nan
     return data, mask_cr, exptime, mzp
 
+def qtable_to_isophote_list(tbl):
+    iso_list = IsophoteList()
+
+    for row in tbl:
+        iso = Isophote(sma=row['sma'],
+            intens=row['intens'],
+            int_err=row['intens_err'],
+            grad=row['grad'],
+            grad_error=row['grad_error'],
+            grad_r_error=row['grad_rerror'],
+            pa=row['pa'],
+            pa_err=row['pa_err'],
+            eps=row['ellipticity'],
+            ellip_err=row['ellipticity_err'],
+            x0=row['x0'],
+            y0=row['y0'],
+            x0_err=row['x0_err'],
+            y0_err=row['y0_err'],
+            # rms=row['rms'],
+            ndata=row['ndata'],
+            nflag=['nflag'],
+            niter=row['niter'],
+            stop_code=row['stop_code']
+        )
+        iso_list.append(iso)
+
+    return IsophoteList(iso_list)
+# 'sma', 'intens', 'int_err', 'eps', 'ellip_err',
+#                            'pa', 'pa_err', 'grad', 'grad_error',
+#                            'grad_r_error', 'x0', 'x0_err', 'y0', 'y0_err',
+#                            'ndata', 'nflag', 'niter', 'stop_code
+
+# 'intens_err', 'ellipticity',
+#                                        'ellipticity_err', 'grad_rerror',
+#                                        'nflag
+
 def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=False, image_path=None):
     """
     New version of fitInitialEllipseModel function
@@ -211,9 +255,13 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
     nonandata = np.where(np.isnan(data), np.nanmedian(data), data)
 
     f = find_galaxy(nonandata, quiet=True) # np.ma.masked_array(data, np.isnan(data)),
+    if f.pa < 90:
+        gpa = (f.pa+90)*np.pi/180
+    else:
+        gpa = (f.pa-90)*np.pi/180
     geometry = EllipseGeometry(x0=f.ypeak, y0=f.xpeak, 
                                sma=f.majoraxis/sma_normfactor, eps=f.eps, 
-                               pa=(90+f.pa)*np.pi/180, astep=0.1)
+                               pa=gpa, astep=0.1)#, fix_center=True, fix_pa=True, fix_eps=True)
     masked_data = np.ma.masked_array(data, ~mask_cr)
     # Check if central pixel is masked
     x0, y0 = int(geometry.x0), int(geometry.y0)
@@ -234,7 +282,8 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
  
 
     while nclip_sm <= 3:
-        isolist = ellipse.fit_image(nclip=nclip_sm, fflag=0.5, step=0.1, fix_pa=True, fix_center=True)
+        isolist = ellipse.fit_image(nclip=nclip_sm, fflag=0.3, step=0.3, fix_pa=True, fix_center=True, maxgerr=0.4)
+                                    # , maxgerr=0.6)
                                     # , maxsma=1.5*geometry.sma) #dont fix center
                                    #  fix_center=True, 
                                     # sma0=10,
@@ -261,8 +310,8 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
     #                     # )
     if len(isolist) == 0:
         print("Trying larger step size for ellipse fitting...")
-        isolist = ellipse.fit_image(nclip=2, fix_center=True, fix_pa=True, fix_eps=True
-                            , fflag=0.5, step=0.3)
+        isolist = ellipse.fit_image(nclip=2, fix_center=True, fix_pa=True
+                            , fflag=0.5, step=0.3, maxgerr=0.6)
                             # maxsma=1.5*geometry.sma) 
                             # sma0=10,
                             # minsma=0.0,
@@ -274,6 +323,14 @@ def MainFitEllipseModel(data, mask_cr=None, plot=False, sma_normfactor=1, final=
         print("Ellipse fitting failed")
         sys.exit()
     range_outward = int(geometry.sma*1.3)  #just a guess right now
+    isotable = isolist.to_table()
+    # median_eps = np.median(isotable['ellipticity'][1:])
+    # isotable['ellipticity'][1:] = median_eps
+    print(isotable)
+    # isolist = qtable_to_isophote_list(isotable)
+    # for isophote in isolist:
+    #     isophote.sample.geometry.eps = median_eps
+
     model_basic = buildEllipseModel(masked_data.shape, isolist, range_outward=range_outward, 
                                         high_harmonics=True, gridspacing=0.1)
     
@@ -419,7 +476,7 @@ def appSBFmagnitude(sbf, mzp):
 ###############
 
 
-def MainPipeline(data_path, file_path=None, image_path=None, make_plots=True, psf=None, maxarea_sourcemask=None, filter="VIS", background_estimation=False):
+def MainPipeline(data_path, file_path=None, image_path=None, make_plots=True, psf=None, maxarea_sourcemask=None, filter="VIS", background_estimation=False, background=None):
     """
     Combining the original with the new functions
     """
@@ -443,7 +500,11 @@ def MainPipeline(data_path, file_path=None, image_path=None, make_plots=True, ps
         print("\n Total background is", background.globalback, background.globalrms)
     else:
         print("\n2. No background estimation performed ...")
-        total_bckgr = 0
+        if background != None:
+            total_bckgr = background
+            data -= total_bckgr
+        else:
+            total_bckgr = 0
 
     # plt.imshow(background.back())
     # plt.show()
@@ -487,7 +548,7 @@ def MainPipeline(data_path, file_path=None, image_path=None, make_plots=True, ps
         np.savetxt(file_path + "/data_background_subtracted", data)
         np.savetxt(file_path + "/combined_final_mask", mask_combined)
 
-    return data, mask_model, mask_combined, nri, image_ps, expected_ps, sbf, noise, sbfmag
+    return data, mask_model, mask_combined, nri, image_ps, expected_ps, sbf, noise, sbfmag, geometry
 
 
 
